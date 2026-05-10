@@ -149,12 +149,37 @@ def recruiter_jobs_view(request):
         messages.error(request, "Only recruiters can view their jobs.")
         return redirect("dashboard")
 
-    jobs = JobPost.objects.filter(recruiter=request.user)
+    jobs = JobPost.objects.filter(recruiter=request.user).prefetch_related(
+        "applications__jobseeker__profile"
+    )
     return render(
         request,
         "jobportal/my_jobs.html",
         {
             "jobs": jobs,
+            "profile": profile,
+        },
+    )
+
+
+@login_required
+@never_cache
+@ensure_csrf_cookie
+def job_applicants_view(request, job_id):
+    profile = get_or_create_profile(request.user)
+    if profile.user_type != UserProfile.RECRUITER:
+        messages.error(request, "Only recruiters can view applicants.")
+        return redirect("dashboard")
+
+    job = get_object_or_404(JobPost, id=job_id, recruiter=request.user)
+    applications = job.applications.select_related("jobseeker__profile").all()
+
+    return render(
+        request,
+        "jobportal/job_applicants.html",
+        {
+            "job": job,
+            "applications": applications,
             "profile": profile,
         },
     )

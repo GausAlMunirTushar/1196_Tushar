@@ -1,0 +1,61 @@
+{% extends "jobportal/base.html" %}
+
+{% block title %}Applicants for {{ job.title }} | Job Portal{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'my_jobs' %}">My Jobs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Applicants for {{ job.title }}</li>
+    </ol>
+</nav>
+
+<section class="mb-4">
+    <h1 class="h3 mb-1">Applicants for {{ job.title }}</h1>
+    <p class="text-secondary">{{ job.category }} | Posted on {{ job.created_at|date:"M d, Y" }}</p>
+</section>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Candidate</th>
+                        <th>Skills</th>
+                        <th>Applied On</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">{{ application.jobseeker.profile.display_name }}</div>
+                                <div class="small text-secondary">{{ application.jobseeker.email }}</div>
+                            </td>
+                            <td>
+                                <div class="small">{{ application.jobseeker.profile.skills_set|truncatechars:100 }}</div>
+                            </td>
+                            <td>{{ application.created_at|date:"M d, Y" }}</td>
+                            <td class="text-end pe-4">
+                                {% if application.jobseeker.profile.resume %}
+                                    <a href="{{ application.jobseeker.profile.resume.url }}" target="_blank" class="btn btn-sm btn-outline-info">View Resume</a>
+                                {% else %}
+                                    <span class="badge text-bg-light border">No Resume</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center p-5 text-secondary">
+                                No applications received for this job yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
