@@ -1,6 +1,6 @@
 {% extends "jobportal/base.html" %}
 
-{% block title %}Post Job | Job Portal{% endblock %}
+{% block title %}{{ title }} | Job Portal{% endblock %}
 
 {% block content %}
 {% if messages %}
@@ -11,8 +11,14 @@
 
 <section class="card border-0 shadow-sm">
     <div class="card-body p-4">
-        <h1 class="h3 mb-2">Post Job</h1>
-        <p class="text-secondary mb-4">Create a recruiter job posting.</p>
+        <h1 class="h3 mb-2">{{ title }}</h1>
+        <p class="text-secondary mb-4">
+            {% if "Update" in title %}
+                Modify your existing job posting.
+            {% else %}
+                Create a recruiter job posting.
+            {% endif %}
+        </p>
 
         <form method="post" novalidate>
             {% csrf_token %}
@@ -20,12 +26,17 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
-                    {% for error in field.errors %}
-                        <div class="invalid-feedback d-block">{{ error }}</div>
-                    {% endfor %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             {% endfor %}
-            <button class="btn btn-primary" type="submit">Post Job</button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">{{ button_text }}</button>
+                <a href="{% url 'my_jobs' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </section>

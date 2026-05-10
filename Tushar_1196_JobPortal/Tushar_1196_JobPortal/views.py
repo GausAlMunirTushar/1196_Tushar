@@ -176,11 +176,66 @@ def job_post_view(request):
             job.recruiter = request.user
             job.save()
             messages.success(request, "Job posted successfully.")
-            return redirect("matches")
+            return redirect("my_jobs")
     else:
         form = JobPostForm()
 
-    return render(request, "jobportal/job_post.html", {"form": form, "profile": profile})
+    return render(
+        request,
+        "jobportal/job_post.html",
+        {
+            "form": form,
+            "profile": profile,
+            "title": "Post Job",
+            "button_text": "Post Job",
+        },
+    )
+
+
+@login_required
+@never_cache
+@ensure_csrf_cookie
+def job_update_view(request, job_id):
+    profile = get_or_create_profile(request.user)
+    if profile.user_type != UserProfile.RECRUITER:
+        messages.error(request, "Only recruiters can update jobs.")
+        return redirect("dashboard")
+
+    job = get_object_or_404(JobPost, id=job_id, recruiter=request.user)
+
+    if request.method == "POST":
+        form = JobPostForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Job updated successfully.")
+            return redirect("my_jobs")
+    else:
+        form = JobPostForm(instance=job)
+
+    return render(
+        request,
+        "jobportal/job_post.html",
+        {
+            "form": form,
+            "profile": profile,
+            "title": "Update Job",
+            "button_text": "Update Job",
+        },
+    )
+
+
+@login_required
+@require_POST
+def job_delete_view(request, job_id):
+    profile = get_or_create_profile(request.user)
+    if profile.user_type != UserProfile.RECRUITER:
+        messages.error(request, "Only recruiters can delete jobs.")
+        return redirect("dashboard")
+
+    job = get_object_or_404(JobPost, id=job_id, recruiter=request.user)
+    job.delete()
+    messages.success(request, "Job deleted successfully.")
+    return redirect("my_jobs")
 
 
 @login_required
