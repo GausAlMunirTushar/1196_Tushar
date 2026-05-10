@@ -143,6 +143,26 @@ def profile_view(request):
 @login_required
 @never_cache
 @ensure_csrf_cookie
+def recruiter_jobs_view(request):
+    profile = get_or_create_profile(request.user)
+    if profile.user_type != UserProfile.RECRUITER:
+        messages.error(request, "Only recruiters can view their jobs.")
+        return redirect("dashboard")
+
+    jobs = JobPost.objects.filter(recruiter=request.user)
+    return render(
+        request,
+        "jobportal/my_jobs.html",
+        {
+            "jobs": jobs,
+            "profile": profile,
+        },
+    )
+
+
+@login_required
+@never_cache
+@ensure_csrf_cookie
 def job_post_view(request):
     profile = get_or_create_profile(request.user)
     if profile.user_type != UserProfile.RECRUITER:
