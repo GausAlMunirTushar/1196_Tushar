@@ -5,6 +5,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
 from .forms import JobPostForm, LoginForm, ProfileForm, RegistrationForm
@@ -44,6 +46,26 @@ def build_match(job, seeker_profile):
     }
 
 
+def csrf_failure(request, reason=""):
+    messages.error(request, "Your form expired. Please reload the page and try again.")
+
+    if request.path.startswith("/register"):
+        return redirect("register")
+    if request.path.startswith("/profile"):
+        return redirect("profile")
+    if request.path.startswith("/jobs/post"):
+        return redirect("job_post")
+    if request.path.startswith("/jobs/apply") or "/apply/" in request.path:
+        return redirect("apply_jobs")
+    if request.path.startswith("/matches"):
+        return redirect("matches")
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    return redirect("login")
+
+
+@never_cache
+@ensure_csrf_cookie
 def register_view(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
@@ -58,6 +80,8 @@ def register_view(request):
     return render(request, "jobportal/register.html", {"form": form})
 
 
+@never_cache
+@ensure_csrf_cookie
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
@@ -75,6 +99,7 @@ def login_view(request):
 
 
 @login_required
+@never_cache
 def dashboard_view(request):
     profile = get_or_create_profile(request.user)
     context = {
@@ -86,6 +111,8 @@ def dashboard_view(request):
 
 
 @login_required
+@never_cache
+@ensure_csrf_cookie
 def profile_view(request):
     profile = get_or_create_profile(request.user)
 
@@ -114,6 +141,8 @@ def profile_view(request):
 
 
 @login_required
+@never_cache
+@ensure_csrf_cookie
 def job_post_view(request):
     profile = get_or_create_profile(request.user)
     if profile.user_type != UserProfile.RECRUITER:
@@ -135,6 +164,8 @@ def job_post_view(request):
 
 
 @login_required
+@never_cache
+@ensure_csrf_cookie
 def job_apply_view(request):
     profile = get_or_create_profile(request.user)
     if profile.user_type != UserProfile.JOB_SEEKER:
@@ -190,6 +221,8 @@ def apply_to_job_view(request, job_id):
 
 
 @login_required
+@never_cache
+@ensure_csrf_cookie
 def match_dashboard_view(request):
     profile = get_or_create_profile(request.user)
 
@@ -234,4 +267,3 @@ def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect("login")
-
