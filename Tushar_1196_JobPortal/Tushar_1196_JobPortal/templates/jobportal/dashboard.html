@@ -17,10 +17,12 @@
         {% if profile.user_type == "recruiter" %}
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div class="border rounded p-3 h-100">
-                        <div class="text-secondary small">Jobs posted</div>
-                        <div class="fs-3 fw-bold">{{ jobs_count }}</div>
-                    </div>
+                    <a href="{% url 'my_jobs' %}" class="text-decoration-none text-dark">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-secondary small">Jobs posted</div>
+                            <div class="fs-3 fw-bold">{{ jobs_count }}</div>
+                        </div>
+                    </a>
                 </div>
                 <div class="col-md-6">
                     <div class="border rounded p-3 h-100">
@@ -34,7 +36,7 @@
                 <div class="col-md-6">
                     <div class="border rounded p-3 h-100">
                         <div class="text-secondary small">Applications submitted</div>
-                        <div class="fs-3 fw-bold">{{ applications_count }}</div>
+                        <div class="fs-3 fw-bold ">{{ applications_count }}</div>
                     </div>
                 </div>
                 <div class="col-md-6">
