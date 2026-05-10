@@ -1,12 +1,13 @@
-{% extends "accounts/base.html" %}
+{% extends "jobportal/base.html" %}
 
-{% block title %}Login | Job Portal{% endblock %}
+{% block title %}Register | Job Portal{% endblock %}
+{% block main_class %}auth-shell d-flex align-items-center justify-content-center{% endblock %}
 
 {% block content %}
-<section class="card auth-card border-0">
+<section class="card auth-card border-0 shadow-sm">
     <div class="card-body p-4">
-        <h1 class="h3 mb-2">Login</h1>
-        <p class="text-secondary mb-4">Access your job portal account.</p>
+        <h1 class="h3 mb-2">Create Account</h1>
+        <p class="text-secondary mb-4">Register for the job portal.</p>
 
         {% if messages %}
             {% for message in messages %}
@@ -31,19 +32,13 @@
                     {% endfor %}
                 </div>
             {% endfor %}
-            <button class="btn btn-primary w-100 py-2" type="submit">Login</button>
+            <button class="btn btn-primary w-100 py-2" type="submit">Register</button>
         </form>
 
         <p class="text-center text-secondary mt-3 mb-0">
-            Need an account? <a class="fw-semibold text-decoration-none" href="{% url 'register' %}">Register</a>
+            Already have an account? <a class="fw-semibold text-decoration-none" href="{% url 'login' %}">Login</a>
         </p>
     </div>
 </section>
 {% endblock %}
 
-Develop a profile creation page based on user type
-a. Recrutier (Company Information)
-b. Jobseekers (Skills set and resume upload option)
-Develop a job posting page for recruiters (Title, Number of openings, Category, Job, description. Skills set)
-Develop a job applying page for jobseeker(Search)
-Develpp a skills mathcing page for both recruiter and jobseeker (Dashboard for skill matched job)

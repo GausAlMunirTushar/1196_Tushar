@@ -1,0 +1,59 @@
+{% extends "jobportal/base.html" %}
+
+{% block title %}Apply Jobs | Job Portal{% endblock %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-info" role="alert">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h1 class="h3 mb-3">Search Jobs</h1>
+        <form class="row g-2" method="get">
+            <div class="col-md-10">
+                <input class="form-control" type="search" name="q" value="{{ search_query }}" placeholder="Search by title, category, description, or skills">
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<div class="row g-3">
+    {% for job in jobs %}
+        <div class="col-lg-6">
+            <article class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-3">
+                        <div>
+                            <h2 class="h5 mb-1">{{ job.title }}</h2>
+                            <div class="text-secondary">{{ job.category }}</div>
+                        </div>
+                        <span class="badge text-bg-light border align-self-start">{{ job.number_of_openings }} openings</span>
+                    </div>
+                    <p class="mt-3 mb-2">{{ job.description }}</p>
+                    <p class="text-secondary mb-3"><strong>Skills:</strong> {{ job.skills_set }}</p>
+
+                    {% if job.already_applied %}
+                        <button class="btn btn-outline-secondary" type="button" disabled>Applied</button>
+                    {% else %}
+                        <form method="post" action="{% url 'apply_to_job' job.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-primary" type="submit">Apply</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">No jobs found.</div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

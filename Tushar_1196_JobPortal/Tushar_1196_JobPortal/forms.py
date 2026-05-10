@@ -1,13 +1,22 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 
-from .models import UserProfile
+from .models import JobPost, UserProfile
 
 
 User = get_user_model()
 
 
-class RegistrationForm(forms.ModelForm):
+class BootstrapFormMixin:
+    def apply_bootstrap(self):
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs["class"] = "form-select"
+            else:
+                field.widget.attrs["class"] = "form-control"
+
+
+class RegistrationForm(BootstrapFormMixin, forms.ModelForm):
     display_name = forms.CharField(max_length=150)
     email = forms.EmailField()
     user_type = forms.ChoiceField(choices=UserProfile.USER_TYPE_CHOICES)
@@ -20,6 +29,7 @@ class RegistrationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.apply_bootstrap()
         placeholders = {
             "username": "Enter username",
             "display_name": "Enter display name",
@@ -29,7 +39,6 @@ class RegistrationForm(forms.ModelForm):
         }
 
         for field_name, field in self.fields.items():
-            field.widget.attrs["class"] = "form-select" if field_name == "user_type" else "form-control"
             if field_name in placeholders:
                 field.widget.attrs["placeholder"] = placeholders[field_name]
 
@@ -69,20 +78,17 @@ class RegistrationForm(forms.ModelForm):
         return user
 
 
-class LoginForm(forms.Form):
+class LoginForm(BootstrapFormMixin, forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
+        self.apply_bootstrap()
 
-        self.fields["username"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Enter username"}
-        )
-        self.fields["password"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Enter password"}
-        )
+        self.fields["username"].widget.attrs.update({"placeholder": "Enter username"})
+        self.fields["password"].widget.attrs.update({"placeholder": "Enter password"})
 
     def clean(self):
         cleaned_data = super().clean()
@@ -102,3 +108,63 @@ class LoginForm(forms.Form):
 
     def get_user(self):
         return getattr(self, "user", None)
+
+
+class ProfileForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = [
+            "display_name",
+            "company_name",
+            "company_information",
+            "skills_set",
+            "resume",
+        ]
+        widgets = {
+            "company_information": forms.Textarea(attrs={"rows": 4}),
+            "skills_set": forms.Textarea(attrs={"rows": 4}),
+        }
+        labels = {
+            "skills_set": "Skills set",
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_type = kwargs.pop("user_type", None)
+        super().__init__(*args, **kwargs)
+
+        if user_type == UserProfile.RECRUITER:
+            self.fields.pop("skills_set")
+            self.fields.pop("resume")
+        else:
+            self.fields.pop("company_name")
+            self.fields.pop("company_information")
+
+        self.apply_bootstrap()
+        if "resume" in self.fields:
+            self.fields["resume"].widget.attrs["accept"] = ".pdf,.doc,.docx"
+
+
+class JobPostForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = JobPost
+        fields = [
+            "title",
+            "number_of_openings",
+            "category",
+            "description",
+            "skills_set",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 5}),
+            "skills_set": forms.Textarea(attrs={"rows": 3}),
+            "number_of_openings": forms.NumberInput(attrs={"min": 1}),
+        }
+        labels = {
+            "number_of_openings": "Number of openings",
+            "skills_set": "Skills set",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.apply_bootstrap()
+
